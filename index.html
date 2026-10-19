@@ -23,12 +23,27 @@
       데모 모드 — Firebase 미연결 상태입니다.<br />아래 버튼으로 체험하세요.
     </div>
     <button id="googleLogin" class="btn primary big">🔵 Google 계정으로 로그인</button>
+    <button id="guestEnter" class="btn big" style="margin-top:8px">🔓 로그인 없이 둘러보기</button>
     <div class="demo-row" style="display:none" id="demoRow">
       <button id="demoTeacher" class="btn">👩‍🏫 강사 데모</button>
       <button id="demoStudent" class="btn">🧑‍🎓 학생 데모</button>
     </div>
     <p class="hint">로그인하면 진도율·출석·퀴즈 기록·AI 학습 도구를 쓸 수 있어요<br />학생은 로그인 후 강사의 승인을 기다립니다</p>
   </div>
+  <footer class="site-foot">비공식 학습 지원 사이트로, 한국산업인력공단(Q-Net) 및 NCS와 무관한 개인 제작 콘텐츠입니다. NCS 명칭·체계는 국가직무능력표준(고용노동부·한국산업인력공단)을 참고·인용했습니다.</footer>
+</div>
+
+<!-- ===== 게스트 둘러보기 (로그인 불필요) ===== -->
+<div id="view-guest" class="view" style="display:none">
+  <header class="app-head">
+    <div><h1>🏭 스마트팩토리 자격증 강의 <span class="badge guest">둘러보기</span></h1></div>
+    <div class="head-right"><button id="guestLogin" class="btn small primary">로그인</button></div>
+  </header>
+  <main>
+    <div id="gCourseHome"></div>
+    <div id="gLessonView" style="display:none"></div>
+    <p class="hint" style="text-align:center;margin-top:16px">🔓 로그인하면 진도율·출석·퀴즈 기록·AI 학습 도구를 쓸 수 있어요</p>
+  </main>
   <footer class="site-foot">비공식 학습 지원 사이트로, 한국산업인력공단(Q-Net) 및 NCS와 무관한 개인 제작 콘텐츠입니다. NCS 명칭·체계는 국가직무능력표준(고용노동부·한국산업인력공단)을 참고·인용했습니다.</footer>
 </div>
 

@@ -41,6 +41,7 @@ body {
   padding: 3px 10px; vertical-align: middle; margin-left: 6px;
 }
 .badge.student { background: #2f81f7; }
+.badge.guest { background: #6e7681; }
 .head-right { display: flex; align-items: center; gap: 10px; font-size: 13px; }
 .tabs { display: flex; gap: 8px; padding: 12px 22px 0; flex-wrap: wrap; max-width: 1100px; margin: 0 auto; }
 .tab {

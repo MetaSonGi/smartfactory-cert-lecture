@@ -55,10 +55,20 @@ const nid = (p) => p + Math.random().toString(36).slice(2, 9);
 
 /* ================= 화면 전환 ================= */
 function show(id) {
-['view-login', 'view-pending', 'view-teacher', 'view-student'].forEach((v) =>
+['view-login', 'view-pending', 'view-teacher', 'view-student', 'view-guest'].forEach((v) =>
 $(v).style.display = v === id? 'block': 'none');
 window.scrollTo(0, 0);
 }
+
+/* 과정 둘러보기 컨테이너 (학생/게스트 공용) */
+let B_HOME = null, B_VIEW = null;
+function browseCtx(homeId, viewId) { B_HOME = $(homeId); B_VIEW = $(viewId); }
+
+/* 게스트(로그인 없이) 둘러보기 */
+$('guestEnter').addEventListener('click', () => {
+user = null; browseCtx('gCourseHome', 'gLessonView'); show('view-guest'); renderCourseHome();
+});
+$('guestLogin').addEventListener('click', () => show('view-login'));
 
 /* ================= 인증 ================= */
 $('googleLogin').addEventListener('click', async () => {
@@ -273,9 +283,10 @@ initTeacher();
 
 /* ================= 학생: 과정 카탈로그·강의자료·연습문제 ================= */
 function renderCourseHome() {
-$('lessonView').style.display = 'none';
-$('courseHome').style.display = 'block';
-$('courseHome').innerHTML = `<h2>🏠 자격증 과정</h2>
+if (!B_HOME || !B_VIEW) browseCtx('courseHome', 'lessonView');
+B_VIEW.style.display = 'none';
+B_HOME.style.display = 'block';
+B_HOME.innerHTML = `<h2>🏠 자격증 과정</h2>
 <p class="hint" style="margin-top:0">NCS(국가직무능력표준)를 참고해 자체 제작한 강의 자료와 연습문제입니다. 과목을 눌러 학습을 시작하세요.</p>
 <div class="cert-grid">${CERTS.map((c) => `
 <div class="cert-card" data-cert="${c.id}">
@@ -291,8 +302,8 @@ el.addEventListener('click', () => renderCertDetail(el.dataset.cert)));
 function renderCertDetail(certId) {
 const c = getCert(certId);
 if (!c) return;
-$('courseHome').style.display = 'none';
-const lv = $('lessonView');
+B_HOME.style.display = 'none';
+const lv = B_VIEW;
 lv.style.display = 'block';
 lv.innerHTML = `
 <button class="btn small ghost back-btn" id="backToHome">← 과정 목록</button>
@@ -321,7 +332,7 @@ function renderLesson(sid) {
 const l = LESSONS[sid];
 if (!l) return;
 const cert = certOfSubject(sid);
-const lv = $('lessonView');
+const lv = B_VIEW;
 lv.innerHTML = `
 <button class="btn small ghost back-btn" id="backToCert">← ${esc(cert? cert.name: '과정')}</button>
 <div class="lesson-head"><h2>📖 ${esc(l.title)}</h2>
@@ -449,6 +460,7 @@ await db.collection('progress').doc(user.uid).collection('views').doc(sid)
 
 /* ================= 학생 ================= */
 async function initStudent() {
+browseCtx('courseHome', 'lessonView');
 renderCourseHome();
 // 과제 목록 미리 로드 (탭 전환 시 바로 표시)
 await loadStudentAssignments();
@@ -854,6 +866,7 @@ loadQuizHistory();
 }
 
 async function refreshMyStats() {
+if (!user) return;
 const stats = await computeStudentStats(user.classId, user.uid);
 renderMyStats(stats);
 renderChecklist(stats);
