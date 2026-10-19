@@ -353,7 +353,9 @@ ${l.summary.map((s) => `<div class="lesson-sec"><h3>${esc(s.h)}</h3>
 <h2>📝 연습문제 (10문항 · 자체 제작)</h2>
 <div id="practiceArea">
 <button class="btn primary" id="practiceStart">▶ 연습문제 풀기</button>
-<p class="hint">자동 채점되며, 해설이 함께 표시됩니다. 실제 기출문제가 아닌 자체 제작 문제입니다.</p>
+<p class="hint">${(PRACTICE_QUIZZES[sid] || []).some((q) => q.selfcheck)
+    ? '객관식은 자동 채점, 서술형은 모범답안을 보고 스스로 체크합니다. 실제 기출문제가 아닌 자체 제작 문제입니다.'
+    : '자동 채점되며, 해설이 함께 표시됩니다. 실제 기출문제가 아닌 자체 제작 문제입니다.'}</p>
 </div>`;
 $('backToCert').addEventListener('click', () => renderCertDetail(l.certId));
 $('practiceStart').addEventListener('click', () => startPracticeQuiz(sid));
@@ -365,10 +367,14 @@ recordLessonView(sid);
 function startPracticeQuiz(sid) {
 const qs = PRACTICE_QUIZZES[sid];
 if (!qs ||!qs.length) { alert('연습문제가 없습니다.'); return;}
+const hasSelf = qs.some((q) => q.selfcheck);
 $('practiceArea').innerHTML = `
-<div class="assign-card"><h3>📝 ${esc(lessonTitle(sid))} — 연습문제 ${qs.length}문항</h3></div>
+<div class="assign-card"><h3>📝 ${esc(lessonTitle(sid))} — 연습문제 ${qs.length}문항${hasSelf? ' (객관식 자동채점 + 서술형 자가체크)': ''}</h3></div>
 ${qs.map((qq, i) => `<div class="quiz-q"><b>Q${i + 1}. ${esc(qq.q)}</b>
-${qq.choices.map((c, j) => `<label class="choice-row"><input type="radio" name="pq${i}" value="${j}" /> <span>${esc(c)}</span></label>`).join('')}
+${qq.selfcheck
+    ? `<textarea class="selfcheck-input" id="pqtext${i}" rows="3" placeholder="답안을 직접 작성해보세요 (서술형 · 자가체크)"></textarea>
+       <details class="model-answer"><summary>📖 모범답안 보기</summary><div class="explain-box">${esc(qq.modelAnswer || '')}</div></details>`
+    : qq.choices.map((c, j) => `<label class="choice-row"><input type="radio" name="pq${i}" value="${j}" /> <span>${esc(c)}</span></label>`).join('')}
 </div>`).join('')}
 <div class="row"><button id="practiceSubmit" class="btn primary">제출하기</button>
 <button id="practiceCancel" class="btn ghost">취소</button></div>`;
@@ -379,21 +385,34 @@ $('practiceSubmit').addEventListener('click', () => submitPracticeQuiz(sid));
 
 async function submitPracticeQuiz(sid) {
 const qs = PRACTICE_QUIZZES[sid];
-const answers = qs.map((_, i) => {
+const answers = qs.map((qq, i) => {
+if (qq.selfcheck) {
+const ta = document.getElementById(`pqtext${i}`);
+return ta? ta.value.trim(): '';
+}
 const sel = document.querySelector(`input[name="pq${i}"]:checked`);
 return sel? +sel.value: -1;
 });
-if (answers.some((a) => a < 0) &&!confirm('풀지 않은 문항이 있습니다. 그래도 제출할까요?')) return;
+const objIdx = qs.map((qq, i) => (qq.selfcheck? -1: i)).filter((i) => i >= 0);
+if (objIdx.some((i) => answers[i] < 0) &&!confirm('풀지 않은 객관식 문항이 있습니다. 그래도 제출할까요?')) return;
 let score = 0;
-qs.forEach((qq, i) => { if (answers[i] === qq.answer) score++;});
-await savePracticeResult(sid, score, qs.length, answers);
+objIdx.forEach((i) => { if (answers[i] === qs[i].answer) score++;});
+await savePracticeResult(sid, score, objIdx.length, answers);
+const totalLabel = objIdx.length < qs.length? `${score}/${objIdx.length}점 (서술형 ${qs.length - objIdx.length}문항은 자가체크)` : `${score}/${qs.length}점`;
 $('practiceArea').innerHTML = `
 <div class="assign-card quiz-result-card"><h3>🎉 채점 완료</h3>
-<p class="score">${score}/${qs.length}점 (${Math.round((score / qs.length) * 100)}점)</p>
-${score === qs.length? '<p>💯 만점입니다! 훌륭해요.</p>': '<p class="hint">아래 해설을 확인하고 다시 도전해보세요.</p>'}
+<p class="score">${totalLabel} (${objIdx.length? Math.round((score / objIdx.length) * 100): 0}점)</p>
+${score === objIdx.length && objIdx.length? '<p>💯 만점입니다! 훌륭해요.</p>': '<p class="hint">아래 해설을 확인하고 다시 도전해보세요. 서술형은 모범답안과 비교해 스스로 체크하세요.</p>'}
 <div class="row" style="justify-content:center"><button id="practiceRetry" class="btn small">🔄 다시 풀기</button></div>
 </div>
 ${qs.map((qq, i) => {
+if (qq.selfcheck) {
+return `<div class="quiz-q"><b>Q${i + 1}. ${esc(qq.q)}</b>
+<div class="explain-box"><b>✍️ 서술형 자가체크</b><br />
+내 답안: ${esc(answers[i] || '(미작성)')}<br />
+📖 모범답안: ${esc(qq.modelAnswer || '')}
+<br />💡 ${esc(qq.explain)}</div></div>`;
+}
 const ok = answers[i] === qq.answer;
 return `<div class="quiz-q"><b>Q${i + 1}. ${esc(qq.q)}</b>
 <div class="explain-box"><b class="${ok? 'correct': 'wrong'}">${ok? '⭕ 정답': '❌ 오답'}</b>

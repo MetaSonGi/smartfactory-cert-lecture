@@ -195,6 +195,13 @@ main { max-width: 1100px; margin: 0 auto; padding: 0 22px 40px; }
 .quiz-q .hint { margin: 6px 0 0; }
 .choice-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; font-size: 14px; }
 .choice-row input[type="text"] { flex: 1; }
+.selfcheck-input {
+  width: 100%; margin-top: 10px; padding: 10px; border-radius: 8px;
+  border: 1px solid #2d3748; background: #161b22; color: #e6edf3;
+  font-size: 14px; font-family: inherit; resize: vertical; box-sizing: border-box;
+}
+.model-answer { margin-top: 10px; font-size: 14px; }
+.model-answer summary { cursor: pointer; color: #58a6ff; }
 @media (max-width: 640px) {
   .stat-card { min-width: 44%; }
   .lms-table { font-size: 12px; min-width: 520px; }

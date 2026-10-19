@@ -60,6 +60,25 @@ const CERTS = [
       },
     ],
   },
+  {
+    id: 'smart-factory-ind',
+    name: '스마트공장산업기사',
+    oldName: null,
+    badge: '🤖',
+    desc: '2026년 신설 국가기술자격 · IoT·AI 기반 스마트팩토리 운용시스템의 설계·구축·관리 (11월 수시검정 예정)',
+    parts: [
+      {
+        id: 'written', name: '필기',
+        examInfo: '자동제어 · 네트워크 일반 · 스마트공장 시스템 각 20문항 / 90분 · 과목당 40점 이상, 전과목 평균 60점 이상 합격',
+        subjects: ['sf-ind-auto', 'sf-ind-net', 'sf-ind-sys'],
+      },
+      {
+        id: 'practical', name: '실기',
+        examInfo: '스마트공장 구축 실무 · 작업형 6시간 · 100점 만점 60점 이상 합격',
+        subjects: ['sf-ind-prac'],
+      },
+    ],
+  },
 ];
 
 /* 과목 id → { certId, part } 역인덱스 (자동 생성) */
