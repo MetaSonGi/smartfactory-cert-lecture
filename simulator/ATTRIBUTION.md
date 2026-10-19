@@ -10,6 +10,10 @@
   PLC 연동을 위한 최소 후크만 추가 (밸브 `plcDriven` 플래그·파일럿 오버라이드 스킵,
   `Roller.active` 게터, 수동 클릭 가드, `window.__sim` 노출, `plc.js` 로드).
 - `circuits/`: 원본 회로 프리셋 20종 + 신규 `plc-reciprocating.txt` (PLC 왕복 예제 회로)
+  + 비전공자용 한국어 기초 예제 12종 (`kr-01`~`kr-12`: 단동/복동 실린더, 속도조절,
+  FRL, AND/양수조작, 자기유지, 자동왕복, 급속배기, 순차동작, 전기공압, PLC 카운터)
+- `index.html` 추가 변경: 툴바에 눈에 잘 띄는 "🔄 초기화" 버튼 (PLC Stop 연동),
+  예제 메뉴에 "🇰🇷 기초 예제" 서브메뉴 추가
 - `plc.js`: 신규 작성 — PLC 래더 에디터·I/O 매핑·100ms 스캔 엔진 (한국어 UI)
 - `LICENSE`: GPL-3.0 전문 (https://www.gnu.org/licenses/gpl-3.0.txt)
 
