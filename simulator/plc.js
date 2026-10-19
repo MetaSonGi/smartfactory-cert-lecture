@@ -571,5 +571,7 @@ loadPlc();
 buildPanel();
 addToolbarButton();
 window.__plc = plc;
+window.plcStop = plcStop; // fork 추가: 시뮬레이터 초기화 버튼에서 PLC 정지용으로 노출
+window.plcStart = plcStart;
 
 })();

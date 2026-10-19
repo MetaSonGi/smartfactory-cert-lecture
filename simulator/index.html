@@ -175,6 +175,26 @@
     background: #ddd;
   }
 
+  /* 눈에 잘 띄는 초기화 버튼 (fork 추가) */
+  .sim-btn-reset {
+    font-weight: 700;
+    font-size: 13px;
+    border: 1.5px solid #f59e0b;
+    background: #fffbeb;
+    color: #92400e;
+    padding: 4px 12px;
+    white-space: nowrap;
+  }
+
+  .sim-btn-reset:hover {
+    background: #fef3c7;
+    border-color: #d97706;
+  }
+
+  .sim-btn-reset:active {
+    background: #fde68a;
+  }
+
   .sim-btn svg {
     width: 16px;
     height: 16px;
@@ -354,6 +374,24 @@
             </ul>
           </li>
 
+          <li class="has-submenu">
+            <a href="#">🇰🇷 기초 예제 (fork 추가)</a>
+            <ul class="submenu">
+              <li><a href="./index.html?loadFile=circuits/kr-01-single-push.txt" target="_blank">기초 1. 단동실린더 + 푸시버튼</a></li>
+              <li><a href="./index.html?loadFile=circuits/kr-02-double-manual.txt" target="_blank">기초 2. 복동실린더 + 5/2 수동밸브</a></li>
+              <li><a href="./index.html?loadFile=circuits/kr-03-speed-control.txt" target="_blank">기초 3. 속도조절 (미터아웃)</a></li>
+              <li><a href="./index.html?loadFile=circuits/kr-04-frl.txt" target="_blank">기초 4. FRL 유닛 + 실린더</a></li>
+              <li><a href="./index.html?loadFile=circuits/kr-05-and.txt" target="_blank">기초 5. AND 로직 회로</a></li>
+              <li><a href="./index.html?loadFile=circuits/kr-06-twohand.txt" target="_blank">기초 6. 양수조작 안전회로</a></li>
+              <li><a href="./index.html?loadFile=circuits/kr-07-latching.txt" target="_blank">기초 7. 리밋스위치 자기유지</a></li>
+              <li><a href="./index.html?loadFile=circuits/kr-08-auto-cycle.txt" target="_blank">기초 8. 실린더 자동왕복</a></li>
+              <li><a href="./index.html?loadFile=circuits/kr-09-quick-exhaust.txt" target="_blank">기초 9. 급속배기밸브 응용</a></li>
+              <li><a href="./index.html?loadFile=circuits/kr-10-sequence.txt" target="_blank">기초 10. 다기통 순차동작</a></li>
+              <li><a href="./index.html?loadFile=circuits/kr-11-electro.txt" target="_blank">기초 11. 전기공압 기초</a></li>
+              <li><a href="./index.html?loadFile=circuits/kr-12-counter.txt" target="_blank">기초 12. 카운터 응용 (PLC)</a></li>
+            </ul>
+          </li>
+
         </ul>
       </li>
 
@@ -429,10 +467,8 @@
         <button class="sim-btn" data-action="sStep" data-i18n-title="sStep" title="Step (s)">
           <svg viewBox="0 0 16 16" fill="currentColor"><polygon points="2,1 9,8 2,15"/><rect x="11" y="1" width="3" height="14"/></svg>
         </button>
-        <button class="sim-btn" data-action="sReset" data-i18n-title="sReset" title="Reset">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-		  <path d="M2 8a6 6 0 0 1 10.5-4M14 8a6 6 0 0 1-10.5 4"/><polyline points="2,2 2,5.5 5.5,5.5"/>
-		  <polyline points="14,14 14,10.5 10.5,10.5"/></svg>
+        <button class="sim-btn sim-btn-reset" data-action="sReset" data-i18n-title="sReset" title="초기화 (회로를 처음 상태로 되돌림)">
+          🔄 초기화
         </button>
         <button class="sim-btn" data-action="sMotion" id="motionToggleBtn" data-i18n-title="sMotion" title="Motion diagram">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,13 4,13 6,3 10,3 12,13 15,13"/></svg>
@@ -4946,6 +4982,7 @@ function simulationContinue() {
 
 function simulationReset() {
   simulationStop();
+  if (typeof plcStop === 'function') plcStop(); // PLC hook: PLC가 Run 중이면 정지 (매핑은 유지됨)
   simulationElapsedMs = 0;
   motionDiagramClear();
   for (const comp of engine.components) {
