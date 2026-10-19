@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🏭 스마트팩토리 자격증 강의 — NCS 기반 자동화·공유압 자격증 학습</title>
+<meta name="description" content="자동화설비기능사·자동화설비산업기사·공유압기능사 NCS 기반 강의 자료와 연습문제, LMS 학습 관리" />
+<link rel="stylesheet" href="style.css" />
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<!-- ===== 로그인 ===== -->
+<div id="view-login" class="view">
+  <div class="login-box">
+    <h1>🏭 스마트팩토리 자격증 강의</h1>
+    <p class="sub">NCS 기반 자동화·공유압 자격증 학습 (필기+실기)</p>
+    <div class="cert-badges"><span>⚙️ 자동화설비기능사</span><span>🏭 자동화설비산업기사</span><span>💧 공유압기능사</span></div>
+    <div id="demoBanner" class="demo-banner" style="display:none">
+      데모 모드 — Firebase 미연결 상태입니다.<br />아래 버튼으로 체험하세요.
+    </div>
+    <button id="googleLogin" class="btn primary big">🔵 Google 계정으로 로그인</button>
+    <div class="demo-row" style="display:none" id="demoRow">
+      <button id="demoTeacher" class="btn">👩‍🏫 강사 데모</button>
+      <button id="demoStudent" class="btn">🧑‍🎓 학생 데모</button>
+    </div>
+    <p class="hint">로그인하면 진도율·출석·퀴즈 기록·AI 학습 도구를 쓸 수 있어요<br />학생은 로그인 후 강사의 승인을 기다립니다</p>
+  </div>
+  <footer class="site-foot">비공식 학습 지원 사이트로, 한국산업인력공단(Q-Net) 및 NCS와 무관한 개인 제작 콘텐츠입니다. NCS 명칭·체계는 국가직무능력표준(고용노동부·한국산업인력공단)을 참고·인용했습니다.</footer>
+</div>
+
+<!-- ===== 승인 대기 ===== -->
+<div id="view-pending" class="view" style="display:none">
+  <div class="login-box">
+    <h1>⏳ 승인 대기 중</h1>
+    <p class="sub" id="pendingMsg">강사가 승인하면 반에 들어갈 수 있어요.</p>
+    <button id="pendingRefresh" class="btn">🔄 상태 새로고침</button>
+    <button id="logout1" class="btn ghost">로그아웃</button>
+  </div>
+</div>
+
+<!-- ===== 강사 대시보드 ===== -->
+<div id="view-teacher" class="view" style="display:none">
+  <header class="app-head">
+    <div><h1>🏭 스마트팩토리 자격증 강의 <span class="badge">강사</span></h1></div>
+    <div class="head-right"><span id="tName"></span><button id="logout2" class="btn small ghost">로그아웃</button></div>
+  </header>
+  <nav class="tabs">
+    <button class="tab active" data-t="t-approve">🙋 승인 관리</button>
+    <button class="tab" data-t="t-lms">📊 학습 관리</button>
+    <button class="tab" data-t="t-assign">📝 과제</button>
+  </nav>
+  <main>
+    <section id="t-approve" class="tpanel active">
+      <h2>승인 대기 학생</h2>
+      <div class="row">
+        <select id="classSelect"></select>
+        <input id="newClassName" placeholder="새 반 이름 (예: 자동화설비기능사 대비반)" />
+        <button id="createClass" class="btn small">➕ 반 만들기</button>
+      </div>
+      <ul id="pendingList" class="list"></ul>
+      <h2>반별 학생</h2>
+      <div id="classRoster"></div>
+    </section>
+
+    <section id="t-lms" class="tpanel">
+      <h2>✅ 출석 관리</h2>
+      <div class="row">
+        <select id="attClass"></select>
+        <input type="text" id="sessTitle" placeholder="회차 제목 (예: 1회차 OT)" style="flex:1" />
+        <input type="date" id="sessDate" />
+        <button id="sessionCreate" class="btn small primary">➕ 회차 만들기</button>
+      </div>
+      <div id="sessionList"></div>
+
+      <h2>📊 반 학습 현황</h2>
+      <div class="row">
+        <select id="progClass"></select>
+        <button id="progRefresh" class="btn small">🔄 새로고침</button>
+      </div>
+      <div id="progTable"></div>
+
+      <h2>📝 퀴즈 출제</h2>
+      <div class="row">
+        <select id="quizClass"></select>
+        <input type="text" id="quizTitle" placeholder="퀴즈 제목" style="flex:1" />
+        <input type="date" id="quizDue" />
+        <label class="chk"><input type="checkbox" id="quizPublished" checked /> 즉시 공개</label>
+      </div>
+      <div id="quizQList"></div>
+      <div class="row">
+        <button id="quizAddQ" class="btn small">➕ 문항 추가</button>
+        <button id="quizCreate" class="btn small primary">📝 퀴즈 만들기</button>
+      </div>
+      <div id="quizListT"></div>
+
+      <h2>🤖 AI 퀴즈 생성기</h2>
+      <p class="hint">주제나 수업 내용을 붙여넣으면 AI가 객관식 문제를 만들어줍니다. 생성 후 문항을 검토·수정하고 "📝 퀴즈 만들기"로 등록하세요.</p>
+      <textarea id="aiQuizSrc" rows="4" placeholder="주제나 수업 내용을 붙여넣으세요 (예: 5/2 방향제어밸브의 구조와 동작)" style="width:100%"></textarea>
+      <div class="row" style="margin-top:8px">
+        <span>문항 수</span><input type="number" id="aiQuizCount" min="1" max="20" value="5" style="width:70px" />
+        <span>난이도</span>
+        <select id="aiQuizLevel"><option value="쉬움">쉬움</option><option value="보통" selected>보통</option><option value="어려움">어려움</option></select>
+        <button id="aiQuizGen" class="btn small primary">✨ 문제 생성</button>
+      </div>
+      <div id="aiQuizPreview"></div>
+
+      <h2>🤖 AI 설정 (Gemini)</h2>
+      <div class="row">
+        <span>🔑 API 키</span>
+        <input type="password" id="aiKeyT" placeholder="Gemini API 키 붙여넣기" style="flex:1" />
+        <button id="aiKeySaveT" class="btn small">저장</button>
+      </div>
+      <p class="hint">키는 이 브라우저에만 저장되고 서버로 전송되지 않습니다. <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:#58a6ff">Google AI Studio에서 무료 발급</a> · API 비용은 각자 키의 무료 할당량으로 충당되어 사이트 운영자에게 비용이 발생하지 않습니다.</p>
+      <p class="hint" style="margin-top:4px">📚 수업 지식 — AI 학습 도우미가 참고할 추가 수업 요약을 입력하세요 (아래 저장 버튼으로 저장). 과정 강의 자료는 자동으로 포함됩니다.</p>
+      <textarea id="aiKnowledge" rows="5" placeholder="예: 5/2 밸브 실습 시 포트 연결 순서 주의사항 등" style="width:100%"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button id="aiKnowledgeSave" class="btn small primary">💾 수업 지식 저장</button>
+      </div>
+    </section>
+
+    <section id="t-assign" class="tpanel">
+      <h2>과제 내기</h2>
+      <div class="row">
+        <select id="asClass"></select>
+        <input type="text" id="asTitle" placeholder="과제 제목" style="flex:1" />
+        <input type="date" id="asDue" />
+        <label class="chk"><input type="checkbox" id="asGit" checked /> Git 제출 허용</label>
+        <button id="asCreate" class="btn small primary">➕ 과제 만들기</button>
+      </div>
+      <input type="text" id="asDesc" placeholder="과제 설명" style="width:100%;margin-bottom:14px" />
+      <h2>학생별 제출 현황</h2>
+      <div id="assignList"></div>
+    </section>
+  </main>
+  <footer class="site-foot">비공식 학습 지원 사이트로, 한국산업인력공단(Q-Net) 및 NCS와 무관한 개인 제작 콘텐츠입니다. NCS 명칭·체계는 국가직무능력표준(고용노동부·한국산업인력공단)을 참고·인용했습니다.</footer>
+</div>
+
+<!-- ===== 학생 대시보드 ===== -->
+<div id="view-student" class="view" style="display:none">
+  <header class="app-head">
+    <div><h1>🏭 스마트팩토리 자격증 강의 <span class="badge student">학생</span></h1></div>
+    <div class="head-right"><span id="sName"></span><button id="logout3" class="btn small ghost">로그아웃</button></div>
+  </header>
+  <nav class="tabs">
+    <button class="tab active" data-t="s-course">🏠 자격증 과정</button>
+    <button class="tab" data-t="s-lms">📊 내 학습</button>
+    <button class="tab" data-t="s-assign">📝 과제 제출</button>
+  </nav>
+  <main>
+    <section id="s-course" class="tpanel active">
+      <div id="courseHome"></div>
+      <div id="lessonView" style="display:none"></div>
+    </section>
+
+    <section id="s-lms" class="tpanel">
+      <div class="row">
+        <span>🔑 Gemini API 키</span>
+        <input type="password" id="aiKeyS" placeholder="AI 기능용 (이 브라우저에만 저장)" style="flex:1" />
+        <button id="aiKeySaveS" class="btn small">저장</button>
+      </div>
+      <h2>📊 내 학습 현황</h2>
+      <div id="myStats" class="stat-cards"></div>
+      <div id="myChecklist"></div>
+      <h2>✅ 출석하기</h2>
+      <div id="checkinList"></div>
+      <h2>📝 내 퀴즈 기록</h2>
+      <div id="quizHistory"></div>
+      <h2>💬 AI 학습 도우미</h2>
+      <p class="hint">과정 강의 자료를 바탕으로 질문에 답해줍니다. (예: 5/2 밸브가 뭐야?)</p>
+      <div id="aiChatLog" class="chat-log"></div>
+      <div class="row">
+        <input type="text" id="aiChatInput" placeholder="질문을 입력하세요" style="flex:1" />
+        <button id="aiChatSend" class="btn small primary">전송</button>
+      </div>
+    </section>
+
+    <section id="s-assign" class="tpanel">
+      <h2>과제 제출</h2>
+      <div id="sAssignList"></div>
+    </section>
+  </main>
+  <footer class="site-foot">비공식 학습 지원 사이트로, 한국산업인력공단(Q-Net) 및 NCS와 무관한 개인 제작 콘텐츠입니다. NCS 명칭·체계는 국가직무능력표준(고용노동부·한국산업인력공단)을 참고·인용했습니다.</footer>
+</div>
+
+<!-- ===== AI 과제 피드백 모달 ===== -->
+<div id="aiFbModal" class="modal" style="display:none">
+  <div class="modal-box">
+    <div class="modal-head"><b>🤖 AI 과제 피드백</b><button id="aiFbClose" class="btn small ghost">닫기</button></div>
+    <div id="aiFbMeta" class="meta" style="margin-bottom:8px;color:#8b949e;font-size:12px"></div>
+    <textarea id="aiFbText" rows="8" placeholder="AI가 생성한 피드백이 여기에 표시됩니다. 강사가 수정 후 저장하세요." style="width:100%"></textarea>
+    <div class="row" style="margin-top:10px;margin-bottom:0">
+      <button id="aiFbRegen" class="btn small">🔄 다시 생성</button>
+      <button id="aiFbSave" class="btn small primary">💾 저장</button>
+    </div>
+  </div>
+</div>
+
+<script src="data/courses.js"></script>
+<script src="data/lessons.js"></script>
+<script src="data/quizzes.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
