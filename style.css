@@ -231,3 +231,19 @@ main { max-width: 1100px; margin: 0 auto; padding: 0 22px 40px; }
 @media (max-width: 640px) {
   .chat-bubble { max-width: 92%; }
 }
+
+/* 핵심용어 플래시카드 */
+.gloss-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap:10px; margin:12px 0; }
+.gloss-card { border:1px solid #ddd; border-radius:8px; padding:10px 12px; cursor:pointer; background:#fff; transition: border-color .15s, background .15s; }
+.gloss-card:hover { border-color:#8aa8e8; }
+.gloss-card.open { border-color:#143d8f; background:#f4f7ff; }
+.gloss-term { font-weight:bold; }
+.gloss-easy { margin-top:6px; }
+.gloss-exam { margin-top:6px; font-size:.9em; color:#8a5a00; }
+/* 학습 로드맵 */
+.roadmap-block { background:#f7f9ff; border:1px solid #ccd8ff; border-radius:10px; padding:14px 16px; margin:14px 0; }
+.roadmap-block h3 { margin-top:0; }
+.roadmap-steps { margin:8px 0; padding-left:22px; }
+.roadmap-steps li { margin:8px 0; }
+.route-box { margin-top:10px; }
+.route-box p { margin:4px 0 0; }

@@ -310,6 +310,13 @@ lv.innerHTML = `
 <div class="lesson-head"><h2>${c.badge} ${esc(c.name)}</h2>
 ${c.oldName? `<div class="meta">구 명칭: ${esc(c.oldName)} (2024년 변경)</div>`: ''}
 <div class="meta">${esc(c.desc)}</div></div>
+${c.roadmap? `<div class="roadmap-block"><h3>🗺️ 학습 로드맵 <span class="meta">(${esc(c.roadmap.weeks)})</span></h3>
+<ol class="roadmap-steps">
+${c.roadmap.steps.map((s) => `<li><strong>${esc(lessonTitle(s.sid))}</strong> <span class="pill">${s.hours}시간</span><div class="meta">${esc(s.note)}</div></li>`).join('')}
+</ol>
+<div class="route-box"><strong>🌱 비전공자 루트</strong><p>${esc(c.roadmap.beginnerRoute)}</p></div>
+<div class="route-box"><strong>🎓 전공자 루트</strong><p>${esc(c.roadmap.majorRoute)}</p></div>
+</div>`: ''}
 ${c.parts.map((p) => `
 <div class="part-block">
 <div class="part-head"><h3>${p.name === 'written'? '✏️ 필기': '🔧 실기'}</h3>
@@ -333,32 +340,52 @@ const l = LESSONS[sid];
 if (!l) return;
 const cert = certOfSubject(sid);
 const lv = B_VIEW;
+const isBasic = /-basic$/.test(sid);
+const gloss = (typeof GLOSSARY !== 'undefined' && GLOSSARY[sid]) || [];
+const qs = PRACTICE_QUIZZES[sid] || [];
 lv.innerHTML = `
 <button class="btn small ghost back-btn" id="backToCert">← ${esc(cert? cert.name: '과정')}</button>
 <div class="lesson-head"><h2>📖 ${esc(l.title)}</h2>
 <div class="meta">${esc(cert? cert.name: '')} · ${l.part === 'written'? '필기': '실기'}</div>
 <div class="meta">${esc(l.examInfo)}</div></div>
+${isBasic? '': `<div style="margin:10px 0"><a class="btn" href="textbooks/${sid}.pdf" target="_blank" rel="noopener">📕 교재 PDF 보기/다운로드</a>
+<span class="hint">이론 전체 + 시험 직전 요약 + 핵심용어집 수록</span></div>`}
 
-<h2>🔗 NCS 연계</h2>
+${(l.ncs && l.ncs.length)? `<h2>🔗 NCS 연계</h2>
 <div class="table-wrap"><table class="ncs-table">
 <tr><th>능력단위 코드</th><th>능력단위명</th><th>수준</th><th>세분류</th></tr>
 ${l.ncs.map((n) => `<tr><td class="code">${esc(n.code)}</td><td>${esc(n.name)}</td><td>${esc(n.level)}</td><td>${esc(n.cls)}</td></tr>`).join('')}
 </table></div>
-<p class="hint" style="margin-top:6px">NCS 명칭·코드·체계는 국가직무능력표준(고용노동부·한국산업인력공단)을 참고·인용한 것입니다.</p>
+<p class="hint" style="margin-top:6px">NCS 명칭·코드·체계는 국가직무능력표준(고용노동부·한국산업인력공단)을 참고·인용한 것입니다.</p>`: ''}
 
 <h2>📚 핵심 정리</h2>
 ${l.summary.map((s) => `<div class="lesson-sec"><h3>${esc(s.h)}</h3>
 <ul>${s.points.map((p) => `<li>${esc(p)}</li>`).join('')}</ul></div>`).join('')}
 
-<h2>📝 연습문제 (10문항 · 자체 제작)</h2>
+${gloss.length? `<h2>📖 핵심용어 (${gloss.length})</h2>
+<p class="hint">용어 카드를 눌러보세요 — 플래시카드처럼 설명이 펼쳐집니다.</p>
+<div class="gloss-grid">
+${gloss.map((g, i) => `<div class="gloss-card" data-gloss="${i}"><div class="gloss-term">📇 ${esc(g.term)}</div>
+<div class="gloss-body" style="display:none"><div class="gloss-easy">${esc(g.easy)}</div>
+<div class="gloss-exam">🎯 ${esc(g.exam)}</div></div></div>`).join('')}
+</div>`: ''}
+
+<h2>📝 연습문제 (${qs.length}문항 · 자체 제작)</h2>
 <div id="practiceArea">
 <button class="btn primary" id="practiceStart">▶ 연습문제 풀기</button>
-<p class="hint">${(PRACTICE_QUIZZES[sid] || []).some((q) => q.selfcheck)
+<p class="hint">${qs.some((q) => q.selfcheck)
     ? '객관식은 자동 채점, 서술형은 모범답안을 보고 스스로 체크합니다. 실제 기출문제가 아닌 자체 제작 문제입니다.'
     : '자동 채점되며, 해설이 함께 표시됩니다. 실제 기출문제가 아닌 자체 제작 문제입니다.'}</p>
 </div>`;
 $('backToCert').addEventListener('click', () => renderCertDetail(l.certId));
 $('practiceStart').addEventListener('click', () => startPracticeQuiz(sid));
+lv.querySelectorAll('[data-gloss]').forEach((el) =>
+el.addEventListener('click', () => {
+const b = el.querySelector('.gloss-body');
+const open = b.style.display === 'none';
+b.style.display = open? 'block': 'none';
+el.classList.toggle('open', open);
+}));
 window.scrollTo(0, 0);
 recordLessonView(sid);
 }
