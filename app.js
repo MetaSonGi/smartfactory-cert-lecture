@@ -295,7 +295,7 @@ B_HOME.innerHTML = `<h2>🏠 자격증 과정</h2>
 ${c.oldName? `<div class="old-name">(구 ${esc(c.oldName)} · 2024년 명칭 변경)</div>`: ''}
 <p>${esc(c.desc)}</p>
 </div>`).join('')}</div>`;
-$('courseHome').querySelectorAll('[data-cert]').forEach((el) =>
+B_HOME.querySelectorAll('[data-cert]').forEach((el) =>
 el.addEventListener('click', () => renderCertDetail(el.dataset.cert)));
 }
 
